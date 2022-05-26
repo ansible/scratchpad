@@ -1,0 +1,33 @@
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+schedules:
+  - cron: 30 * * * *
+    displayName: Hourly
+    always: true
+    branches:
+      include:
+        - main
+
+pool:
+  vmImage: 'ubuntu-20.04'
+
+variables:
+  ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+    purge: --purge
+  ${{ else }}:
+    purge: ""
+
+steps:
+  - script: ./purge.py ansible/scratchpad 3600 $(purge)
+    displayName: Purge old tags
+    env:
+      QUAY_TOKEN: $(QUAY_TOKEN)
